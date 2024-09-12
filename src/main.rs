@@ -20,7 +20,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let mut scheduler = AsyncScheduler::new();
     for week in config.schedule {
         let worker_ids = week.workers.clone();
-        let slack_ids: Vec<String> = config.workers.iter().filter(|w| worker_ids.contains(&w.name)).map(|w| format!("<@{}>", w.slack_id)).collect();
+        let slack_ids: Vec<String> = worker_ids.iter().map(|id| {
+            format!("<@{}>", config.workers.iter().find(|w| w.name.eq(id)).unwrap().slack_id)
+        }).collect();
         let workers_count = slack_ids.len();
         let human_slack_mentions = utils::join_human_readable(slack_ids.clone());
         let task_texts: Vec<String> = config.tasks.iter().map(|x| x.text.clone()).collect();
