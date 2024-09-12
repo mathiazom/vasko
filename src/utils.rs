@@ -20,3 +20,15 @@ pub fn weekday_to_clokwerk_interval(weekday: &Weekday) -> Interval {
         Weekday::Sunday => Interval::Sunday,
     }
 }
+
+pub fn weekday_to_chrono(weekday: &Weekday) -> chrono::Weekday {
+    match weekday {
+        Weekday::Monday => chrono::Weekday::Mon,
+        Weekday::Tuesday => chrono::Weekday::Tue,
+        Weekday::Wednesday => chrono::Weekday::Wed,
+        Weekday::Thursday => chrono::Weekday::Thu,
+        Weekday::Friday => chrono::Weekday::Fri,
+        Weekday::Saturday => chrono::Weekday::Sat,
+        Weekday::Sunday => chrono::Weekday::Sun,
+    }
+}
