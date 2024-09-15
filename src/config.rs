@@ -1,4 +1,7 @@
-use knuffel::{Decode, DecodeScalar};
+use crate::config::ReadConfigError::{IoError, ParseError};
+use knuffel::{Decode, DecodeScalar, Error};
+use std::fs;
+
 #[derive(Decode, Debug)]
 pub struct Config {
     #[knuffel(child, unwrap(children))]
@@ -7,8 +10,6 @@ pub struct Config {
     pub channel: String,
     #[knuffel(child, unwrap(argument))]
     pub bot: String,
-    #[knuffel(child)]
-    pub media: Option<Media>,
     #[knuffel(child, unwrap(children))]
     pub reminders: Vec<Reminder>,
     #[knuffel(child, unwrap(children))]
@@ -25,29 +26,7 @@ pub struct Worker {
     pub slack_id: String,
 }
 
-#[derive(Decode, Debug)]
-pub struct RedditImageSource {
-    #[knuffel(child, unwrap(argument))]
-    pub id: String,
-    #[knuffel(child, unwrap(argument))]
-    pub secret: String,
-}
-
-#[derive(Decode, Debug)]
-pub struct Media {
-    #[knuffel(child)]
-    pub sources: MediaSources,
-    #[knuffel(child, unwrap(argument))]
-    pub transfersh: String,
-}
-
-#[derive(Decode, Debug)]
-pub struct MediaSources {
-    #[knuffel(child)]
-    pub reddit: Option<RedditImageSource>,
-}
-
-#[derive(DecodeScalar, Debug)]
+#[derive(DecodeScalar, Clone, Debug)]
 pub enum Weekday {
     Monday,
     Tuesday,
@@ -58,19 +37,20 @@ pub enum Weekday {
     Sunday,
 }
 
-#[derive(Decode, Debug)]
+#[derive(Decode, Clone, Debug)]
 pub struct RedditImage {
-    #[knuffel(arguments)]
-    pub subs: Vec<String>,
+    #[knuffel(child, unwrap(argument))]
+    pub sub: String,
+    #[knuffel(child, unwrap(argument))]
+    pub pretext: Option<String>,
 }
 
-#[derive(Decode, Debug)]
-pub struct ReminderMedia {
-    #[knuffel(child)]
-    pub reddit: Option<RedditImage>,
+#[derive(Decode, Clone, Debug)]
+pub enum ReminderImage {
+    Reddit(RedditImage),
 }
 
-#[derive(Decode, Debug)]
+#[derive(Decode, Clone, Debug)]
 pub struct ReminderMessage {
     #[knuffel(child, unwrap(argument))]
     pub singular: String,
@@ -82,7 +62,7 @@ pub type Hour = u8;
 
 pub type Minute = u8;
 
-#[derive(Decode, Debug)]
+#[derive(Decode, Clone, Debug)]
 pub struct Reminder {
     #[knuffel(child, unwrap(argument))]
     pub weekday: Weekday,
@@ -92,8 +72,8 @@ pub struct Reminder {
     pub minute: Minute,
     #[knuffel(child)]
     pub message: ReminderMessage,
-    #[knuffel(child)]
-    pub media: ReminderMedia,
+    #[knuffel(child, unwrap(children))]
+    pub image: Vec<ReminderImage>,
 }
 
 #[derive(Decode, Debug)]
@@ -110,4 +90,17 @@ pub struct Week {
     pub number: WeekNumber,
     #[knuffel(arguments)]
     pub workers: Vec<String>,
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum ReadConfigError {
+    #[error(transparent)]
+    IoError(std::io::Error),
+    #[error(transparent)]
+    ParseError(Error),
+}
+
+pub fn read_config(path: &str) -> Result<Config, ReadConfigError> {
+    let config_str = fs::read_to_string(path).map_err(IoError)?;
+    knuffel::parse::<Config>(path, &config_str).map_err(ParseError)
 }

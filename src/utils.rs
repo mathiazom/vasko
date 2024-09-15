@@ -1,24 +1,32 @@
-use clokwerk::Interval;
-use crate::config::Weekday;
+use crate::config::{Weekday, Worker};
+use chrono::{DateTime, Datelike, Local, NaiveDate, NaiveTime, TimeZone};
+use std::time::Duration;
 
-pub fn join_human_readable(items: Vec<String>) -> String {
+pub fn join_human_readable(items: &Vec<String>) -> String {
     match items.len() {
         0 => String::new(),
         1 => items[0].clone(),
-        _ => format!("{} og {}", items[..items.len() - 1].join(", "), items[items.len() - 1]),
+        _ => format!(
+            "{} og {}",
+            items[..items.len() - 1].join(", "),
+            items[items.len() - 1]
+        ),
     }
 }
 
-pub fn weekday_to_clokwerk_interval(weekday: &Weekday) -> Interval {
-    match weekday {
-        Weekday::Monday => Interval::Monday,
-        Weekday::Tuesday => Interval::Tuesday,
-        Weekday::Wednesday => Interval::Wednesday,
-        Weekday::Thursday => Interval::Thursday,
-        Weekday::Friday => Interval::Friday,
-        Weekday::Saturday => Interval::Saturday,
-        Weekday::Sunday => Interval::Sunday,
-    }
+pub fn slack_ids_from_week_workers(
+    week_worker_ids: &Vec<String>,
+    all_workers: &Vec<Worker>,
+) -> Vec<String> {
+    week_worker_ids
+        .iter()
+        .filter_map(|id| {
+            all_workers
+                .iter()
+                .find(|w| w.name.eq(id))
+                .map(|w| format!("<@{}>", w.slack_id))
+        })
+        .collect()
 }
 
 pub fn weekday_to_chrono(weekday: &Weekday) -> chrono::Weekday {
@@ -31,4 +39,40 @@ pub fn weekday_to_chrono(weekday: &Weekday) -> chrono::Weekday {
         Weekday::Saturday => chrono::Weekday::Sat,
         Weekday::Sunday => chrono::Weekday::Sun,
     }
+}
+
+fn from_local_isoywdhm_opt(
+    year: i32,
+    week: u32,
+    weekday: chrono::Weekday,
+    hour: u32,
+    min: u32,
+) -> Option<DateTime<Local>> {
+    let target_date = NaiveDate::from_isoywd_opt(year, week, weekday)?;
+    let target_time = NaiveTime::from_hms_opt(hour, min, 0)?;
+    let naive_target_datetime = target_date.and_time(target_time);
+    Local.from_local_datetime(&naive_target_datetime).single()
+}
+
+pub fn from_next_local_isowdhm_opt(
+    week: u32,
+    weekday: chrono::Weekday,
+    hour: u32,
+    min: u32,
+) -> Option<DateTime<Local>> {
+    let now = Local::now();
+    let current_year = now.year();
+    let mut datetime = from_local_isoywdhm_opt(current_year, week, weekday, hour, min)?;
+    if week < now.iso_week().week() && datetime <= now {
+        datetime = from_local_isoywdhm_opt(current_year + 1, week, weekday, hour, min)?;
+    }
+    Some(datetime)
+}
+
+pub fn duration_until_datetime(date_time: DateTime<Local>) -> Option<Duration> {
+    let seconds_until = date_time.signed_duration_since(Local::now()).num_seconds();
+    if seconds_until <= 0 {
+        return None;
+    }
+    Some(Duration::from_secs(seconds_until as u64))
 }

@@ -1,1 +1,0 @@
-pub const CATS: [&str;2] = ["https://preview.redd.it/its-so-nice-to-sleep-when-people-have-to-go-to-work-and-you-v0-ixp7hmwhbdod1.jpeg?width=1080&crop=smart&auto=webp&s=5c95f585e0e492ebbcd330f2c31a008d3a77acd2", "https://i.redd.it/kjdv3j4apskd1.jpeg"];
