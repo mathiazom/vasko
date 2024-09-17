@@ -1,0 +1,70 @@
+// slack channel id
+channel "C0XXXXXXXXX"
+
+// slack bot token
+bot "xoxb-XXXXXXXXXX-XXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXX"
+
+workers {
+    // name     slack id
+    - "Alice"   "U0XXXXXXX01"
+    - "Bob"     "U0XXXXXXX02"
+    - "Charlie" "U0XXXXXXX03"
+}
+
+reminders {
+    - {
+        weekday "friday"
+        hour 13
+        minute 37
+        message {
+            plural ":timer_clock::broom:
+TGIF! But wait, %s still have a date with destiny (and dirty dishes)!
+Refresh your memory in the :thread:"
+            singular ":timer_clock::broom:
+TGIF! But hold your horses, %s! Your cleaning crusade isn't over yet!
+Revisit your noble quest in the :thread:"
+        }
+        image {
+            reddit {
+                sub "aww"
+                pretext "Here's a furry friend to make cleaning less 'ruff':"
+            }
+        }
+    }
+    - {
+        weekday "sunday"
+        hour 12
+        minute 0
+        message {
+            plural ":broom::soap::sparkles:
+Rise and shine, %s! It's your time to shine (quite literally)!
+Grab your capes, er, cleaning cloths - it's superhero time!"
+            singular ":broom::soap::sparkles:
+Wakey wakey, %s! Your solo cleaning concert awaits!
+Time to rock that mop like a guitar solo!"
+        }
+        image {
+            // multiple sources act as fallback, in order of appearance
+            reddit {
+                sub "funny"
+                pretext "Your cleaning warm-up meme:"
+            }
+            reddit {
+                sub "pics"
+                pretext "Gaze upon the glory that awaits a clean home:"
+            }
+        }
+    }
+}
+
+tasks {
+    - r#":bathtub: Transform the downstairs bathroom into a sparkling oasis: make that bathtub shine, the sink sparkle, and the toilet... well, you know."#
+    - r#":shower: Upstairs bathroom blitz: Make it so clean you could eat off the floor (but please don't)."#
+    - r#":teapot: Kitchen crusade + Vacuum victory lap: Cook up some cleanliness and suck up the competition!"#
+}
+
+schedule {
+    - 36  "Alice"     "Bob"       "Charlie"
+    - 37  "Bob"       "Charlie"   "Alice"
+    - 38  "Charlie"   "Alice"     "Bob"
+}
