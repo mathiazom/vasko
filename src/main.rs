@@ -2,6 +2,7 @@ use crate::config::read_config;
 use crate::schedule::schedule_task;
 use crate::utils::{from_next_local_isowdhm_opt, join_human_readable, weekday_to_chrono};
 use humantime::format_duration;
+use std::collections::HashMap;
 use tokio::task::JoinSet;
 use utils::duration_until_datetime;
 
@@ -19,23 +20,40 @@ async fn main() {
         .expect(format!("Error reading config at {}", CONFIG_PATH).as_str());
     let mut tasks = JoinSet::new();
     let all_workers = config.workers;
+    let worker_to_slack_map: HashMap<String, String> = all_workers
+        .iter()
+        .map(|w| (w.name.clone(), format!("<@{}>", w.slack_id.clone())))
+        .collect();
+    let all_tasks = config.tasks;
     for week in config.schedule {
         let week_number = week.number as u32;
-        let slack_ids = utils::slack_ids_from_week_workers(&week.workers, &all_workers);
-        let workers_count = slack_ids.len();
+        let slack_ids: Vec<String> = week
+            .assignments
+            .iter()
+            .map(|(_, worker)| worker_to_slack_map[worker].clone())
+            .collect();
+        if slack_ids.len() == 0 {
+            println!("⚠️ Skipped week {}, was empty", week_number);
+            continue
+        }
         let human_slack_mentions = join_human_readable(&slack_ids);
-        let task_texts: Vec<String> = config.tasks.iter().map(|x| x.text.clone()).collect();
+        let thread_messages: Vec<String> = week
+            .assignments
+            .iter()
+            .filter_map(|(task, worker)| {
+                let task_text = all_tasks.iter().find(|t| t.name.eq(task))?;
+                Some(format!(
+                    "{}\n{}",
+                    worker_to_slack_map[worker], task_text.text
+                ))
+            })
+            .collect();
         for reminder in config.reminders.clone() {
-            let message = (match workers_count {
+            let message = (match slack_ids.len() {
                 1 => reminder.message.singular,
                 _ => reminder.message.plural,
             })
             .replace("%s", human_slack_mentions.as_str());
-            let thread_messages: Vec<String> = task_texts
-                .iter()
-                .enumerate()
-                .filter_map(|(i, t)| slack_ids.get(i).map(|s| format!("{}\n{}", s, t)))
-                .collect();
             let Some(target_datetime) = from_next_local_isowdhm_opt(
                 week_number,
                 weekday_to_chrono(&reminder.weekday),
@@ -52,7 +70,7 @@ async fn main() {
                         config.bot.clone(),
                         config.channel.clone(),
                         message,
-                        thread_messages,
+                        thread_messages.clone(),
                         reminder.image,
                     ),
                 ));

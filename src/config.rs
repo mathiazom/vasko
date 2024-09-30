@@ -1,5 +1,6 @@
 use crate::config::ReadConfigError::{IoError, ParseError};
 use knuffel::{Decode, DecodeScalar, Error};
+use std::collections::HashMap;
 use std::fs;
 
 #[derive(Decode, Debug)]
@@ -20,7 +21,7 @@ pub struct Config {
 
 #[derive(Decode, Debug)]
 pub struct Worker {
-    #[knuffel(argument)]
+    #[knuffel(node_name)]
     pub name: String,
     #[knuffel(argument)]
     pub slack_id: String,
@@ -78,6 +79,8 @@ pub struct Reminder {
 
 #[derive(Decode, Debug)]
 pub struct Task {
+    #[knuffel(node_name)]
+    pub name: String,
     #[knuffel(argument)]
     pub text: String,
 }
@@ -88,8 +91,8 @@ pub type WeekNumber = u8;
 pub struct Week {
     #[knuffel(argument)]
     pub number: WeekNumber,
-    #[knuffel(arguments)]
-    pub workers: Vec<String>,
+    #[knuffel(properties)]
+    pub assignments: HashMap<String, String>,
 }
 
 #[derive(thiserror::Error, Debug)]

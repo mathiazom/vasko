@@ -1,4 +1,4 @@
-use crate::config::{Weekday, Worker};
+use crate::config::Weekday;
 use chrono::{DateTime, Datelike, Local, NaiveDate, NaiveTime, TimeZone};
 use std::time::Duration;
 
@@ -12,21 +12,6 @@ pub fn join_human_readable(items: &Vec<String>) -> String {
             items[items.len() - 1]
         ),
     }
-}
-
-pub fn slack_ids_from_week_workers(
-    week_worker_ids: &Vec<String>,
-    all_workers: &Vec<Worker>,
-) -> Vec<String> {
-    week_worker_ids
-        .iter()
-        .filter_map(|id| {
-            all_workers
-                .iter()
-                .find(|w| w.name.eq(id))
-                .map(|w| format!("<@{}>", w.slack_id))
-        })
-        .collect()
 }
 
 pub fn weekday_to_chrono(weekday: &Weekday) -> chrono::Weekday {

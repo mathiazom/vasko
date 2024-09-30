@@ -5,10 +5,9 @@ channel "C0XXXXXXXXX"
 bot "xoxb-XXXXXXXXXX-XXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXX"
 
 workers {
-    // name     slack id
-    - "Alice"   "U0XXXXXXX01"
-    - "Bob"     "U0XXXXXXX02"
-    - "Charlie" "U0XXXXXXX03"
+    alice "U0XXXXXXX01"
+    bob "U0XXXXXXX02"
+    charlie "U0XXXXXXX03"
 }
 
 reminders {
@@ -58,13 +57,13 @@ Time to rock that mop like a guitar solo!"
 }
 
 tasks {
-    - r#":bathtub: Transform the downstairs bathroom into a sparkling oasis: make that bathtub shine, the sink sparkle, and the toilet... well, you know."#
-    - r#":shower: Upstairs bathroom blitz: Make it so clean you could eat off the floor (but please don't)."#
-    - r#":teapot: Kitchen crusade + Vacuum victory lap: Cook up some cleanliness and suck up the competition!"#
+    bathdown ":bathtub: Transform the downstairs bathroom into a sparkling oasis: make that bathtub shine, the sink sparkle, and the toilet... well, you know."
+    bathup ":shower: Upstairs bathroom blitz: Make it so clean you could eat off the floor (but please don't)."
+    kitvac ":teapot: Kitchen crusade + Vacuum victory lap: Cook up some cleanliness and suck up the competition!"
 }
 
 schedule {
-    - 36  "Alice"     "Bob"       "Charlie"
-    - 37  "Bob"       "Charlie"   "Alice"
-    - 38  "Charlie"   "Alice"     "Bob"
+    - 36 kitvac="alice" bathup="bob" bathdown="charlie"
+    - 37 kitvac="bob" bathup="charlie" bathdown="alice"
+    - 38 kitvac="charlie" bathup="alice" bathdown="bob"
 }
