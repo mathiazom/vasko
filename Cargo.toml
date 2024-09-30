@@ -11,6 +11,6 @@ chrono = "0.4.38"
 thiserror = "1.0.63"
 humantime = "2.1.0"
 url = "2.5.2"
-roux = "2.2.12"
+roux = "2.2.13"
 
 

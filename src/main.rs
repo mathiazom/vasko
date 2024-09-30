@@ -34,7 +34,7 @@ async fn main() {
             .collect();
         if slack_ids.len() == 0 {
             println!("⚠️ Skipped week {}, was empty", week_number);
-            continue
+            continue;
         }
         let human_slack_mentions = join_human_readable(&slack_ids);
         let thread_messages: Vec<String> = week

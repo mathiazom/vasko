@@ -27,15 +27,12 @@ pub async fn top_image_this_week(subreddit: &String) -> Result<Url, RedditError>
         .top(TOP_IMAGES_SEARCH_LIMIT, Some(THIS_WEEK_FEED_OPTION))
         .await
         .map_err(FetchError)?;
-    let mut url: Option<Url> = None;
-    for post in res.data.children {
-        if let Some(raw_post_url) = post.data.url {
-            if let Ok(post_url) = Url::parse(raw_post_url.as_str()) {
-                url = Some(post_url);
-                break;
-            }
+    let url: Option<Url> = res.data.children.iter().find_map(|post| {
+        match (post.data.post_hint.as_deref(), post.data.url.as_deref()) {
+            (Some("image"), Some(raw_url)) => Url::parse(raw_url).ok(),
+            _ => None,
         }
-    }
+    });
     url.ok_or(MissingData(Error::new(
         ErrorKind::Other,
         format!(
