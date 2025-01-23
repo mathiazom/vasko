@@ -2,7 +2,7 @@ use crate::config::read_config;
 use crate::schedule::schedule_task;
 use crate::utils::{from_next_local_isowdhm_opt, join_human_readable, weekday_to_chrono};
 use humantime::format_duration;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use tokio::task::JoinSet;
 use utils::duration_until_datetime;
 
@@ -31,6 +31,8 @@ async fn main() {
             .assignments
             .iter()
             .map(|(_, worker)| worker_to_slack_map[worker].clone())
+            .collect::<HashSet<_>>()
+            .into_iter()
             .collect();
         if slack_ids.len() == 0 {
             println!("⚠️ Skipped week {}, was empty", week_number);
