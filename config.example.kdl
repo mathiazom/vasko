@@ -4,6 +4,16 @@ channel "C0XXXXXXXXX"
 // slack bot token
 bot "xoxb-XXXXXXXXXX-XXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXX"
 
+// reddit "script" app credentials (create one at https://www.reddit.com/prefs/apps)
+// plus the username/password of the account the app is registered under.
+// required because reddit blocks unauthenticated requests from most cloud/server IPs.
+reddit {
+    client-id "XXXXXXXXXXXXXX"
+    client-secret "XXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    username "your-reddit-username"
+    password "your-reddit-password"
+}
+
 workers {
     alice "U0XXXXXXX01"
     bob "U0XXXXXXX02"

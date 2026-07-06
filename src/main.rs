@@ -74,6 +74,7 @@ async fn main() {
                         message,
                         thread_messages.clone(),
                         reminder.image,
+                        config.reddit.clone(),
                     ),
                 ));
                 println!(

@@ -1,4 +1,4 @@
-use crate::config::ReminderImage;
+use crate::config::{RedditCredentials, ReminderImage};
 use crate::reddit::top_image_this_week;
 use crate::reminder::SendReminderError::{SlackError, SlackHyperError};
 use chrono::Local;
@@ -101,6 +101,7 @@ pub async fn send_reminder_task(
     message: String,
     thread_messages: Vec<String>,
     images: Vec<ReminderImage>,
+    reddit_credentials: RedditCredentials,
 ) {
     println!("⏰ Reminder task woke up at {}", Local::now());
     let mut image_pretext: Option<String> = None;
@@ -108,12 +109,21 @@ pub async fn send_reminder_task(
     for img in images {
         match img {
             ReminderImage::Reddit(rm) => {
-                if let Ok(top_image_url) = top_image_this_week(&rm.sub).await {
-                    (image_url, image_pretext) = (Some(top_image_url), rm.pretext);
-                    break;
+                match top_image_this_week(&rm.sub, &reddit_credentials).await {
+                    Ok(top_image_url) => {
+                        (image_url, image_pretext) = (Some(top_image_url), rm.pretext);
+                        break;
+                    }
+                    Err(e) => {
+                        eprintln!("⚠️ failed to fetch top image for r/{}: {}", rm.sub, e);
+                    }
                 }
             }
         }
+    }
+    match &image_url {
+        Some(url) => println!("📸 using image url {}", url),
+        None => println!("📸 no image found for this reminder"),
     }
     send_reminder(
         bot_token.into(),

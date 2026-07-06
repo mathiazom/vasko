@@ -17,6 +17,20 @@ pub struct Config {
     pub tasks: Vec<Task>,
     #[knuffel(child, unwrap(children))]
     pub schedule: Vec<Week>,
+    #[knuffel(child)]
+    pub reddit: RedditCredentials,
+}
+
+#[derive(Decode, Clone, Debug)]
+pub struct RedditCredentials {
+    #[knuffel(child, unwrap(argument))]
+    pub client_id: String,
+    #[knuffel(child, unwrap(argument))]
+    pub client_secret: String,
+    #[knuffel(child, unwrap(argument))]
+    pub username: String,
+    #[knuffel(child, unwrap(argument))]
+    pub password: String,
 }
 
 #[derive(Decode, Debug)]
