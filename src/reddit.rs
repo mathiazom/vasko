@@ -62,7 +62,10 @@ async fn login(user_agent: &str, credentials: &RedditCredentials) -> Result<Stri
     match serde_json::from_str::<TokenResponse>(&body) {
         Ok(TokenResponse::Ok { access_token }) => Ok(access_token),
         Ok(TokenResponse::Err { error }) => Err(LoginError(format!("auth error: {}", error))),
-        Err(e) => Err(LoginError(format!("failed to decode token response: {}", e))),
+        Err(e) => Err(LoginError(format!(
+            "failed to decode token response: {}",
+            e
+        ))),
     }
 }
 
