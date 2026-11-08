@@ -6,7 +6,8 @@ use slack_morphism::api::SlackApiChatPostMessageRequest;
 use slack_morphism::blocks::SlackBlock::{Image, Section};
 use slack_morphism::blocks::SlackBlockText::{MarkDown, Plain};
 use slack_morphism::blocks::{
-    SlackBlockMarkDownText, SlackBlockPlainText, SlackImageBlock, SlackSectionBlock,
+    SlackBlockMarkDownText, SlackBlockPlainText, SlackImageBlock, SlackImageUrlOrFile,
+    SlackSectionBlock,
 };
 use slack_morphism::errors::SlackClientError;
 use slack_morphism::hyper_tokio::SlackClientHyperConnector;
@@ -43,6 +44,7 @@ pub async fn send_reminder(
         })),
         fields: None,
         accessory: None,
+        expand: None,
     })];
     if let Some(url) = image_url {
         if let Some(pretext) = image_pretext {
@@ -54,11 +56,12 @@ pub async fn send_reminder(
                 })),
                 fields: None,
                 accessory: None,
+                expand: None,
             }))
         }
         blocks.push(Image(SlackImageBlock {
             block_id: None,
-            image_url: url,
+            image_url_or_file: SlackImageUrlOrFile::ImageUrl { image_url: url },
             alt_text: "".to_string(),
             title: None,
         }))
