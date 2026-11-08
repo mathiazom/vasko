@@ -1,5 +1,5 @@
 # Use the official Rust image as the base image
-FROM rust:1.81 as builder
+FROM rust:1.99 as builder
 
 WORKDIR /app
 
