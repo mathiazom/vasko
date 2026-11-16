@@ -1,25 +1,21 @@
-# Use the official Rust image as the base image
-FROM rust:1.100 as builder
+FROM rust:1.100 AS builder
 
 WORKDIR /app
 
-# Copy your project's Cargo.toml and Cargo.lock
 COPY ./Cargo.toml ./Cargo.lock ./
 
-# Copy your source code
+# Build dependencies alone so this layer survives source changes
+RUN mkdir src && echo 'fn main(){}' > src/main.rs && cargo build --release && rm -rf src
+
 COPY ./src ./src
 
-# Build your application for release
-RUN cargo build --release
+# touch: the dummy main.rs build is newer than the copied source, so cargo would skip it
+RUN touch src/main.rs && cargo build --release
 
-# Create a new stage with a minimal image
 FROM debian:stable-slim
 
-# Install necessary runtime dependencies
 RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
-# Copy the build artifact from the builder stage
 COPY --from=builder /app/target/release/vasko /usr/local/bin/vasko
 
-# Set the startup command to run your binary
 CMD ["vasko"]
